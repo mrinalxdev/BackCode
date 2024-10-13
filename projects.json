@@ -1,0 +1,424 @@
+[
+  {
+    "id": 1,
+    "title": "JWT Authentication",
+    "languages": "Node.js",
+    "desc": "JWT Authentication: Implements secure user authentication using JSON Web Tokens (JWT), handling user sessions and protecting routes.",
+    "link": "/post/jwt-authentication",
+    "projectStructure": {
+      "name": "jwt-auth",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "components",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "Header.js",
+                  "type": "file"
+                },
+                {
+                  "name": "Footer.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "pages",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "index.js",
+                  "type": "file"
+                },
+                {
+                  "name": "about.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "styles",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "globals.css",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "JWT Authentication: Implements secure user authentication using JSON Web Tokens (JWT), handling user sessions and protecting routes. JWT tokens consist of three parts: Header, Payload, Signature.",
+    "files": [
+      {
+        "name": "app.js",
+        "content": "const express = require('express');\nconst jwt = require('jsonwebtoken');\n\nconst app = express();\napp.use(express.json());\n\n// Secret key for JWT\nconst secretKey = 'your-secret-key';\n\n// Mock user data\nconst users = [\n  { id: 1, username: 'user1', password: 'password1' },\n  { id: 2, username: 'user2', password: 'password2' }\n];\n\n// Login route\napp.post('/login', (req, res) => {\n  const { username, password } = req.body;\n  const user = users.find(u => u.username === username && u.password === password);\n\n  if (user) {\n    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '1h' });\n    res.json({ token });\n  } else {\n    res.status(401).json({ message: 'Invalid credentials' });\n  }\n});\n\n// Protected route\napp.get('/protected', authenticateToken, (req, res) => {\n  res.json({ message: 'Access granted to protected route', user: req.user });\n});\n\n// Middleware to authenticate token\nfunction authenticateToken(req, res, next) {\n  const authHeader = req.headers['authorization'];\n  const token = authHeader && authHeader.split(' ')[1];\n\n  if (token == null) return res.sendStatus(401);\n\n  jwt.verify(token, secretKey, (err, user) => {\n    if (err) return res.sendStatus(403);\n    req.user = user;\n    next();\n  });\n}\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "OAuth2 Authentication",
+    "languages": "Node.js",
+    "desc": "OAuth2-based user authentication allowing login via external providers like Google or GitHub.",
+    "link": "/post/oauth2-authentication",
+    "projectStructure": {
+      "name": "oauth2-auth",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "components",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "Header.js",
+                  "type": "file"
+                },
+                {
+                  "name": "Footer.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "pages",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "login.js",
+                  "type": "file"
+                },
+                {
+                  "name": "callback.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "Implements OAuth2 for secure user login using Passport.js, supporting multiple providers.",
+    "files": [
+      {
+        "name": "app.js",
+        "content": "// Express server and OAuth2 setup..."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "REST API with CRUD Operations",
+    "languages": "Node.js",
+    "desc": "Build a REST API with CRUD operations for managing user data.",
+    "link": "/post/rest-api-crud",
+    "projectStructure": {
+      "name": "rest-api-crud",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "controllers",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "userController.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "models",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "userModel.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "routes",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "userRoutes.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "Set up a simple CRUD API with endpoints to create, read, update, and delete user data.",
+    "files": [
+      {
+        "name": "app.js",
+        "content": "// Express server setup for CRUD operations..."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "GraphQL API with Apollo Server",
+    "languages": "Node.js",
+    "desc": "Create a GraphQL API using Apollo Server for efficient data querying.",
+    "link": "/post/graphql-api-apollo",
+    "projectStructure": {
+      "name": "graphql-api",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "resolvers",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "userResolver.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "schemas",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "userSchema.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "Set up a GraphQL API to handle efficient data queries and mutations for user data.",
+    "files": [
+      {
+        "name": "app.js",
+        "content": "// Apollo server setup with GraphQL schema and resolvers..."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "WebSocket Chat Application",
+    "languages": "Node.js",
+    "desc": "Build a real-time chat application using WebSockets.",
+    "link": "/post/websocket-chat-app",
+    "projectStructure": {
+      "name": "websocket-chat",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "components",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "Chat.js",
+                  "type": "file"
+                }
+              ]
+            },
+            {
+              "name": "server",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "chatServer.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "Create a WebSocket-based chat app for real-time messaging between users.",
+    "files": [
+      {
+        "name": "chatServer.js",
+        "content": "// WebSocket server setup for real-time messaging..."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "MongoDB Aggregation Pipeline",
+    "languages": "Node.js",
+    "desc": "Implement MongoDB aggregation pipelines for advanced data querying.",
+    "link": "/post/mongodb-aggregation-pipeline",
+    "projectStructure": {
+      "name": "mongodb-aggregation",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "controllers",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "aggregationController.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "Use MongoDB's aggregation framework for data aggregation and filtering.",
+    "files": [
+      {
+        "name": "aggregationController.js",
+        "content": "// MongoDB aggregation pipeline implementation..."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Stripe Payment Gateway Integration",
+    "languages": "Node.js",
+    "desc": "Integrate Stripe payment gateway for secure online payments.",
+    "link": "/post/stripe-payment-integration",
+    "projectStructure": {
+      "name": "stripe-payment",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "controllers",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "paymentController.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "app.js",
+          "type": "file"
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "Set up Stripe integration for handling payments within your application.",
+    "files": [
+      {
+        "name": "paymentController.js",
+        "content": "// Stripe API integration for handling payments..."
+      }
+    ]
+  }
+]

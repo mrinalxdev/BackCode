@@ -1,24 +1,30 @@
-"use client";
+"use client"
+
+import React, { useState } from "react";
 import { Folder, File, ChevronRight, ChevronDown } from "lucide-react";
-import { useState } from "react";
 
 const ProjectStructure = ({ structure }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [openFolders, setOpenFolders] = useState({});
 
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
+  const toggleFolder = (path) => {
+    setOpenFolders(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
   };
 
-  const renderStructure = (item, depth = 0) => {
-    const paddingLeft = `${depth * 1.5}rem`;
+  const renderStructure = (item, path = "") => {
+    if (!item) {
+      console.error("Undefined item in project structure");
+      return null;
+    }
+
+    const currentPath = `${path}/${item.name}`;
+    const isOpen = openFolders[currentPath];
 
     if (item.type === "file") {
       return (
-        <div
-          key={item.name}
-          className="flex items-center py-1"
-          style={{ paddingLeft }}
-        >
+        <div key={currentPath} className="flex items-center py-1" style={{ paddingLeft: `${path.split('/').length * 1.5}rem` }}>
           <File className="w-4 h-4 mr-2 text-gray-500" />
           <span className="text-sm">{item.name}</span>
         </div>
@@ -26,11 +32,11 @@ const ProjectStructure = ({ structure }) => {
     }
 
     return (
-      <div key={item.name}>
+      <div key={currentPath}>
         <div
           className="flex items-center py-1 cursor-pointer hover:bg-gray-100"
-          style={{ paddingLeft }}
-          onClick={toggleOpen}
+          style={{ paddingLeft: `${path.split('/').length * 1.5}rem` }}
+          onClick={() => toggleFolder(currentPath)}
         >
           {isOpen ? (
             <ChevronDown className="w-4 h-4 mr-1 text-gray-500" />
@@ -41,8 +47,8 @@ const ProjectStructure = ({ structure }) => {
           <span className="text-sm font-medium">{item.name}</span>
         </div>
         {isOpen && item.children && (
-          <div className="ml-4">
-            {item.children.map((child) => renderStructure(child, depth + 1))}
+          <div>
+            {item.children.map((child) => renderStructure(child, currentPath))}
           </div>
         )}
       </div>
@@ -52,48 +58,11 @@ const ProjectStructure = ({ structure }) => {
   return (
     <div className="bg-white rounded-lg p-4 max-w-md w-full">
       <h2 className="text-lg font-semibold mb-4">Project Structure</h2>
-      <div className="rounded-md">{renderStructure(structure)}</div>
+      <div className="rounded-md">
+        {structure ? renderStructure(structure) : <p>No structure available</p>}
+      </div>
     </div>
   );
 };
 
-export default function Component() {
-  const projectStructure = {
-    name: "jwt-auth",
-    type: "folder",
-    children: [
-      {
-        name: "src",
-        type: "folder",
-        children: [
-          {
-            name: "components",
-            type: "folder",
-            children: [
-              { name: "Header.js", type: "file" },
-              { name: "Footer.js", type: "file" },
-            ],
-          },
-          {
-            name: "pages",
-            type: "folder",
-            children: [
-              { name: "index.js", type: "file" },
-              { name: "about.js", type: "file" },
-            ],
-          },
-          {
-            name: "styles",
-            type: "folder",
-            children: [{ name: "globals.css", type: "file" }],
-          },
-        ],
-      },
-      { name: "app.js", type: "file" },
-      { name: "package.json", type: "file" },
-      { name: "README.md", type: "file" },
-    ],
-  };
-
-  return <ProjectStructure structure={projectStructure} />;
-}
+export default ProjectStructure;

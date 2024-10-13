@@ -1,9 +1,12 @@
-const ProjectBrief = () => {
+"use client"
+
+import React from "react";
+
+const ProjectBrief = ({ brief }) => {
   return (
     <div className="p-4 max-w-xl">
-      JWT Authentication: Implements secure user authentication using JSON Web
-      Tokens (JWT), handling user sessions and protecting routes.
-      JWT tokens consist of three parts Header, Payload, Signature.
+      <h2 className="text-lg font-semibold mb-4">Project Brief</h2>
+      <p>{brief}</p>
     </div>
   );
 };
