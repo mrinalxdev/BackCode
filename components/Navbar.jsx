@@ -1,5 +1,6 @@
 import { Brain, Github, PenBox } from "lucide-react";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const Navbar = () => {
   return (
@@ -9,14 +10,14 @@ const Navbar = () => {
       </h1>
 
       <div className="flex gap-4">
-        <Button className="flex gap-2">
-          <Github />
-          <span>Star this project</span>
-        </Button>
-        <Button className="flex gap-2">
-          <PenBox />
-          <span>Contribute</span>
-        </Button>
+        <Link href={''}>
+        </Link>
+        <Link href={"/admin"}>
+          <Button className="flex gap-2">
+            <PenBox />
+            <span>Contribute</span>
+          </Button>
+        </Link>
       </div>
     </div>
   );

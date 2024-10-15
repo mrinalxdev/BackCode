@@ -1,8 +1,11 @@
+"use client"
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Folder, File, Plus, Minus } from "lucide-react";
 
 export default function AdminPanel() {
   const [projects, setProjects] = useState([]);
@@ -12,7 +15,7 @@ export default function AdminPanel() {
     desc: "",
     link: "",
     brief: "",
-    projectStructure: { name: "", type: "folder", children: [] },
+    projectStructure: { name: "root", type: "folder", children: [] },
     files: [],
   });
 
@@ -25,15 +28,6 @@ export default function AdminPanel() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProject((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleStructureChange = (e) => {
-    try {
-      const parsedStructure = JSON.parse(e.target.value);
-      setNewProject((prev) => ({ ...prev, projectStructure: parsedStructure }));
-    } catch (error) {
-      console.error("Invalid JSON for project structure:", error);
-    }
   };
 
   const handleFileAdd = () => {
@@ -69,7 +63,7 @@ export default function AdminPanel() {
           desc: "",
           link: "",
           brief: "",
-          projectStructure: { name: "", type: "folder", children: [] },
+          projectStructure: { name: "root", type: "folder", children: [] },
           files: [],
         });
       } else {
@@ -79,6 +73,85 @@ export default function AdminPanel() {
     } catch (error) {
       console.error("Error submitting project:", error);
     }
+  };
+
+  const ProjectStructureItem = ({ item, path = [], onUpdate }) => {
+    const [isExpanded, setIsExpanded] = useState(true);
+    const [newItemName, setNewItemName] = useState("");
+
+    const handleToggle = () => setIsExpanded(!isExpanded);
+
+    const handleAddItem = (type) => {
+      const newItem = { name: newItemName, type, children: type === 'folder' ? [] : undefined };
+      onUpdate([...path, 'children'], [...item.children, newItem]);
+      setNewItemName("");
+    };
+
+    const handleRemoveItem = () => {
+      const parentPath = path.slice(0, -1);
+      const parentChildren = path.length > 0 ? getNestedValue(newProject.projectStructure, [...parentPath, 'children']) : newProject.projectStructure.children;
+      const updatedChildren = parentChildren.filter((_, index) => index !== path[path.length - 1]);
+      onUpdate([...parentPath, 'children'], updatedChildren);
+    };
+
+    return (
+      <div className="ml-4">
+        <div className="flex items-center">
+          {item.type === 'folder' ? (
+            <Button variant="ghost" size="sm" onClick={handleToggle}>
+              {isExpanded ? <Minus size={16} /> : <Plus size={16} />}
+            </Button>
+          ) : (
+            <span className="w-6" />
+          )}
+          {item.type === 'folder' ? <Folder size={16} className="mr-2" /> : <File size={16} className="mr-2" />}
+          <span>{item.name}</span>
+          {path.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={handleRemoveItem}>
+              <Minus size={16} />
+            </Button>
+          )}
+        </div>
+        {item.type === 'folder' && isExpanded && (
+          <>
+            <div className="flex items-center mt-2">
+              <Input
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                placeholder="New item name"
+                className="mr-2"
+              />
+              <Button onClick={() => handleAddItem('file')} size="sm">Add File</Button>
+              <Button onClick={() => handleAddItem('folder')} size="sm" className="ml-2">Add Folder</Button>
+            </div>
+            {item.children.map((child, index) => (
+              <ProjectStructureItem
+                key={index}
+                item={child}
+                path={[...path, 'children', index]}
+                onUpdate={onUpdate}
+              />
+            ))}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const updateProjectStructure = (path, value) => {
+    setNewProject((prev) => {
+      const updatedStructure = { ...prev.projectStructure };
+      let current = updatedStructure;
+      for (let i = 0; i < path.length - 1; i++) {
+        current = current[path[i]];
+      }
+      current[path[path.length - 1]] = value;
+      return { ...prev, projectStructure: updatedStructure };
+    });
+  };
+
+  const getNestedValue = (obj, path) => {
+    return path.reduce((acc, key) => (acc && acc[key] !== undefined) ? acc[key] : undefined, obj);
   };
 
   return (
@@ -122,6 +195,7 @@ export default function AdminPanel() {
               onChange={handleInputChange}
               placeholder="Project Brief"
               required
+              className="min-h-[200px]"
             />
           </CardContent>
         </Card>
@@ -129,12 +203,9 @@ export default function AdminPanel() {
         <Card>
           <CardHeader>Project Structure</CardHeader>
           <CardContent>
-            <Textarea
-              name="projectStructure"
-              value={JSON.stringify(newProject.projectStructure, null, 2)}
-              onChange={handleStructureChange}
-              placeholder="Project Structure (JSON format)"
-              required
+            <ProjectStructureItem
+              item={newProject.projectStructure}
+              onUpdate={updateProjectStructure}
             />
           </CardContent>
         </Card>
@@ -158,6 +229,7 @@ export default function AdminPanel() {
                     handleFileChange(index, "content", e.target.value)
                   }
                   placeholder="File Content"
+                  className="min-h-[200px]"
                 />
               </div>
             ))}

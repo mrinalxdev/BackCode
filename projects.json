@@ -72,83 +72,21 @@
       {
         "name": "app.js",
         "content": "const express = require('express');\nconst jwt = require('jsonwebtoken');\n\nconst app = express();\napp.use(express.json());\n\n// Secret key for JWT\nconst secretKey = 'your-secret-key';\n\n// Mock user data\nconst users = [\n  { id: 1, username: 'user1', password: 'password1' },\n  { id: 2, username: 'user2', password: 'password2' }\n];\n\n// Login route\napp.post('/login', (req, res) => {\n  const { username, password } = req.body;\n  const user = users.find(u => u.username === username && u.password === password);\n\n  if (user) {\n    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '1h' });\n    res.json({ token });\n  } else {\n    res.status(401).json({ message: 'Invalid credentials' });\n  }\n});\n\n// Protected route\napp.get('/protected', authenticateToken, (req, res) => {\n  res.json({ message: 'Access granted to protected route', user: req.user });\n});\n\n// Middleware to authenticate token\nfunction authenticateToken(req, res, next) {\n  const authHeader = req.headers['authorization'];\n  const token = authHeader && authHeader.split(' ')[1];\n\n  if (token == null) return res.sendStatus(401);\n\n  jwt.verify(token, secretKey, (err, user) => {\n    if (err) return res.sendStatus(403);\n    req.user = user;\n    next();\n  });\n}\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+      },
+      {
+        "name": "new.app.js",
+        "content": "const new = 'app.js/'"
       }
     ]
   },
   {
     "id": 2,
-    "title": "OAuth2 Authentication",
+    "title": "RESTful API with Express",
     "languages": "Node.js",
-    "desc": "OAuth2-based user authentication allowing login via external providers like Google or GitHub.",
-    "link": "/post/oauth2-authentication",
+    "desc": "RESTful API: Develops a basic CRUD API using Express.js, handling resource creation, retrieval, updates, and deletion.",
+    "link": "/post/restful-api-express",
     "projectStructure": {
-      "name": "oauth2-auth",
-      "type": "folder",
-      "children": [
-        {
-          "name": "src",
-          "type": "folder",
-          "children": [
-            {
-              "name": "components",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "Header.js",
-                  "type": "file"
-                },
-                {
-                  "name": "Footer.js",
-                  "type": "file"
-                }
-              ]
-            },
-            {
-              "name": "pages",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "login.js",
-                  "type": "file"
-                },
-                {
-                  "name": "callback.js",
-                  "type": "file"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "app.js",
-          "type": "file"
-        },
-        {
-          "name": "package.json",
-          "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
-        }
-      ]
-    },
-    "brief": "Implements OAuth2 for secure user login using Passport.js, supporting multiple providers.",
-    "files": [
-      {
-        "name": "app.js",
-        "content": "// Express server and OAuth2 setup..."
-      }
-    ]
-  },
-  {
-    "id": 3,
-    "title": "REST API with CRUD Operations",
-    "languages": "Node.js",
-    "desc": "Build a REST API with CRUD operations for managing user data.",
-    "link": "/post/rest-api-crud",
-    "projectStructure": {
-      "name": "rest-api-crud",
+      "name": "restful-api",
       "type": "folder",
       "children": [
         {
@@ -201,19 +139,23 @@
         }
       ]
     },
-    "brief": "Set up a simple CRUD API with endpoints to create, read, update, and delete user data.",
+    "brief": "This project demonstrates a simple RESTful API for user data management, handling basic CRUD operations (Create, Read, Update, Delete) with Express.js.",
     "files": [
       {
         "name": "app.js",
-        "content": "// Express server setup for CRUD operations..."
+        "content": "const express = require('express');\nconst userRoutes = require('./src/routes/userRoutes');\n\nconst app = express();\napp.use(express.json());\n\napp.use('/users', userRoutes);\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+      },
+      {
+        "name": "userController.js",
+        "content": "const express = require('express');\nconst userRoutes = require('./src/routes/userRoutes');\n\nconst app = express();\napp.use(express.json());\n\napp.use('/users', userRoutes);\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
       }
     ]
   },
   {
-    "id": 4,
+    "id": 3,
     "title": "GraphQL API with Apollo Server",
     "languages": "Node.js",
-    "desc": "Create a GraphQL API using Apollo Server for efficient data querying.",
+    "desc": "GraphQL API: Builds a GraphQL API using Apollo Server, defining schemas, resolvers, and integrating queries and mutations for user data.",
     "link": "/post/graphql-api-apollo",
     "projectStructure": {
       "name": "graphql-api",
@@ -224,16 +166,6 @@
           "type": "folder",
           "children": [
             {
-              "name": "resolvers",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "userResolver.js",
-                  "type": "file"
-                }
-              ]
-            },
-            {
               "name": "schemas",
               "type": "folder",
               "children": [
@@ -242,11 +174,21 @@
                   "type": "file"
                 }
               ]
+            },
+            {
+              "name": "resolvers",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "userResolvers.js",
+                  "type": "file"
+                }
+              ]
             }
           ]
         },
         {
-          "name": "app.js",
+          "name": "server.js",
           "type": "file"
         },
         {
@@ -259,22 +201,22 @@
         }
       ]
     },
-    "brief": "Set up a GraphQL API to handle efficient data queries and mutations for user data.",
+    "brief": "This project implements a simple GraphQL API for user data using Apollo Server, with sample queries and mutations.",
     "files": [
       {
-        "name": "app.js",
-        "content": "// Apollo server setup with GraphQL schema and resolvers..."
+        "name": "server.js",
+        "content": "const { ApolloServer } = require('apollo-server');\nconst typeDefs = require('./src/schemas/userSchema');\nconst resolvers = require('./src/resolvers/userResolvers');\n\nconst server = new ApolloServer({ typeDefs, resolvers });\n\nserver.listen().then(({ url }) => {\n  console.log(`🚀 Server ready at ${url}`);\n});"
       }
     ]
   },
   {
-    "id": 5,
-    "title": "WebSocket Chat Application",
+    "id": 4,
+    "title": "Socket.IO Real-time Chat App",
     "languages": "Node.js",
-    "desc": "Build a real-time chat application using WebSockets.",
-    "link": "/post/websocket-chat-app",
+    "desc": "Socket.IO Chat App: Implements a real-time chat application using Socket.IO, enabling real-time communication between connected users.",
+    "link": "/post/socketio-chat-app",
     "projectStructure": {
-      "name": "websocket-chat",
+      "name": "chat-app",
       "type": "folder",
       "children": [
         {
@@ -282,21 +224,63 @@
           "type": "folder",
           "children": [
             {
-              "name": "components",
+              "name": "public",
               "type": "folder",
               "children": [
                 {
-                  "name": "Chat.js",
+                  "name": "index.html",
                   "type": "file"
                 }
               ]
             },
             {
-              "name": "server",
+              "name": "server.js",
+              "type": "file"
+            }
+          ]
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "README.md",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "This project creates a real-time chat application where users can join rooms and send messages in real-time using Socket.IO.",
+    "files": [
+      {
+        "name": "server.js",
+        "content": "const express = require('express');\nconst http = require('http');\nconst socketIo = require('socket.io');\n\nconst app = express();\nconst server = http.createServer(app);\nconst io = socketIo(server);\n\napp.use(express.static('src/public'));\n\nio.on('connection', (socket) => {\n  console.log('A user connected');\n\n  socket.on('message', (msg) => {\n    io.emit('message', msg);\n  });\n\n  socket.on('disconnect', () => {\n    console.log('User disconnected');\n  });\n});\n\nserver.listen(3000, () => console.log('Server running on port 3000'));"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Node.js Task Scheduler",
+    "languages": "Node.js",
+    "desc": "Task Scheduler: Implements a simple task scheduler using Node.js and the 'node-cron' library to schedule and manage repetitive tasks.",
+    "link": "/post/node-task-scheduler",
+    "projectStructure": {
+      "name": "task-scheduler",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "tasks",
               "type": "folder",
               "children": [
                 {
-                  "name": "chatServer.js",
+                  "name": "task1.js",
+                  "type": "file"
+                },
+                {
+                  "name": "task2.js",
                   "type": "file"
                 }
               ]
@@ -304,7 +288,7 @@
           ]
         },
         {
-          "name": "app.js",
+          "name": "scheduler.js",
           "type": "file"
         },
         {
@@ -317,24 +301,28 @@
         }
       ]
     },
-    "brief": "Create a WebSocket-based chat app for real-time messaging between users.",
+    "brief": "This project demonstrates how to create a task scheduler using Node.js and 'node-cron' to automate and manage scheduled tasks like sending notifications or backups.",
     "files": [
       {
-        "name": "chatServer.js",
-        "content": "// WebSocket server setup for real-time messaging..."
+        "name": "scheduler.js",
+        "content": "const cron = require('node-cron');\n\ncron.schedule('0 0 * * *', () => {\n  console.log('Running a task every midnight');\n});\n\ncron.schedule('*/5 * * * *', () => {\n  console.log('Running a task every 5 minutes');\n});"
       }
     ]
   },
   {
-    "id": 6,
-    "title": "MongoDB Aggregation Pipeline",
-    "languages": "Node.js",
-    "desc": "Implement MongoDB aggregation pipelines for advanced data querying.",
-    "link": "/post/mongodb-aggregation-pipeline",
+    "title": "Hello",
+    "languages": "JavaScript",
+    "desc": "This is a project named in projects",
+    "link": "/post/hello-js",
+    "brief": "more briefing of the project",
     "projectStructure": {
-      "name": "mongodb-aggregation",
+      "name": "root",
       "type": "folder",
       "children": [
+        {
+          "name": "app.js",
+          "type": "file"
+        },
         {
           "name": "src",
           "type": "folder",
@@ -344,81 +332,33 @@
               "type": "folder",
               "children": [
                 {
-                  "name": "aggregationController.js",
+                  "name": "useControllers.js",
                   "type": "file"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "name": "app.js",
-          "type": "file"
-        },
-        {
-          "name": "package.json",
-          "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
-        }
-      ]
-    },
-    "brief": "Use MongoDB's aggregation framework for data aggregation and filtering.",
-    "files": [
-      {
-        "name": "aggregationController.js",
-        "content": "// MongoDB aggregation pipeline implementation..."
-      }
-    ]
-  },
-  {
-    "id": 7,
-    "title": "Stripe Payment Gateway Integration",
-    "languages": "Node.js",
-    "desc": "Integrate Stripe payment gateway for secure online payments.",
-    "link": "/post/stripe-payment-integration",
-    "projectStructure": {
-      "name": "stripe-payment",
-      "type": "folder",
-      "children": [
-        {
-          "name": "src",
-          "type": "folder",
-          "children": [
+            },
             {
-              "name": "controllers",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "paymentController.js",
-                  "type": "file"
-                }
-              ]
+              "name": "index.js",
+              "type": "file"
             }
           ]
-        },
-        {
-          "name": "app.js",
-          "type": "file"
-        },
-        {
-          "name": "package.json",
-          "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
         }
       ]
     },
-    "brief": "Set up Stripe integration for handling payments within your application.",
     "files": [
       {
-        "name": "paymentController.js",
-        "content": "// Stripe API integration for handling payments..."
+        "name": "app.js",
+        "content": "some content on this file"
+      },
+      {
+        "name": "index.js",
+        "content": "some more content on this file"
+      },
+      {
+        "name": "useController.js",
+        "content": "some more content for the booting"
       }
-    ]
+    ],
+    "id": 6
   }
 ]
