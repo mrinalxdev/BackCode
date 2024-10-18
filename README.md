@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# BackCode | Home for the optimized backend head start codes
 
-## Getting Started
+![Banner](./nick/banner.png)
 
-First, run the development server:
+I am building a shadcn for backend development. Detailed project structure and code for every file just copy paste to your project and give more focus to your core functionalities !!
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## For the contribution part
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+I will be openeing few issues related to revamp of the website and db connections 
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+for now you can add projects just by editing the `projects.json` file in the root directory or by visiting the contribution panel of the platform
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Things to note
 
-## Learn More
+When your are contributing, there is place to fill `Link` section in this you need to give the dynaminc url of project like, If the user is contributing for a cache management then the link would look like this `/post/cache-management-{language}`
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+I have used NextJs and local json file to store all the files and codes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Future Releases ?? 
 
-## Deploy on Vercel
+For the upcoming part we are enlisting few features
+- Auth/OAuth 
+- DB (Supabase obv)
+- Users can save the post and the codes, like, leave comments and discuss
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Built by [Mrinal Pramanick](https://twitter.com/Hi_Mrinal)
+

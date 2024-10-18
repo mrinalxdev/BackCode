@@ -27,7 +27,9 @@ export default function SearchResults() {
           <Post key={item.id} title={item.title} languages={item.languages} desc={item.desc} link={item.link} />
         ))}
       </div>
-      {results.length === 0 && <p>No results found.</p>}
+      {results.length === 0 && <div className='h-screen'>
+        We are working hard to bring many head starts for your backend projects !!
+        </div>}
     </div>
   );
 }

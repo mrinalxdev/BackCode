@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Scale, Search, ShieldOff } from "lucide-react";
+import { Book, Scale, Search, Shield, ShieldOff } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const Banner = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,6 +19,10 @@ const Banner = () => {
   return (
     <div className="flex flex-col max-w-4xl mx-auto">
       <div className="text-center">
+        <div className="mt-[2rem] mb-6 p-2 border text-sm lg:text-[1rem] shadow-xl rounded-[2rem] max-w-[40%] mx-auto text-gray-500">
+          Working on 6 + Head start codes !!
+        </div>
+
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6">
           Find <span className="text-primary">Optimized Backend Code</span> for
           Your App
@@ -40,22 +45,27 @@ const Banner = () => {
       </form>
 
       <div className="flex mx-auto gap-4">
-        <Button
-          variant="outline"
-          className="flex gap-2 hover:shadow-lg duration-100 ease-in-out"
-        >
-          <Scale />
-          optimized LoadBalancer
-        </Button>
-        <Button
-          variant="outline"
-          className="flex gap-2 hover:shadow-lg duration-100 ease-in-out"
-        >
-          <ShieldOff />
-          optimized Ratelimiter
-        </Button>
+        <Link href="/coming-soon">
+          <Button
+            variant="outline"
+            className="flex gap-2 hover:shadow-lg duration-100 ease-in-out"
+          >
+            <Book />
+            Documentations
+          </Button>
+        </Link>
+        <Link href={"/coming-soon"}>
+          <Button
+            variant="outline"
+            className="flex gap-2 hover:shadow-lg duration-100 ease-in-out"
+          >
+            <Shield />
+            Secured Api Builder
+          </Button>
+        </Link>
       </div>
     </div>
+    
   );
 };
 

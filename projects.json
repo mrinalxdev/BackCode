@@ -1,52 +1,44 @@
 [
   {
     "id": 1,
-    "title": "JWT Authentication",
-    "languages": "Node.js",
-    "desc": "JWT Authentication: Implements secure user authentication using JSON Web Tokens (JWT), handling user sessions and protecting routes.",
-    "link": "/post/jwt-authentication",
+    "title": "Rate Limiter",
+    "languages": "Go",
+    "desc": "Rate Limiter: Implements a token bucket-based rate limiting algorithm with in-memory and Redis store options for managing rate limiting across clients.",
+    "link": "/post/rate-limiter",
     "projectStructure": {
-      "name": "jwt-auth",
+      "name": "ratelimiter",
       "type": "folder",
       "children": [
         {
-          "name": "src",
+          "name": "main.go",
+          "type": "file"
+        },
+        {
+          "name": "ratelimiter",
           "type": "folder",
           "children": [
             {
-              "name": "components",
+              "name": "limiter.go",
+              "type": "file"
+            },
+            {
+              "name": "tokens.go",
+              "type": "file"
+            },
+            {
+              "name": "utils.go",
+              "type": "file"
+            },
+            {
+              "name": "store",
               "type": "folder",
               "children": [
                 {
-                  "name": "Header.js",
+                  "name": "memory.go",
                   "type": "file"
                 },
                 {
-                  "name": "Footer.js",
-                  "type": "file"
-                }
-              ]
-            },
-            {
-              "name": "pages",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "index.js",
-                  "type": "file"
-                },
-                {
-                  "name": "about.js",
-                  "type": "file"
-                }
-              ]
-            },
-            {
-              "name": "styles",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "globals.css",
+                  "name": "redis.go",
                   "type": "file"
                 }
               ]
@@ -54,71 +46,189 @@
           ]
         },
         {
-          "name": "app.js",
-          "type": "file"
+          "name": "examples",
+          "type": "folder",
+          "children": [
+            {
+              "name": "main.go",
+              "type": "file"
+            }
+          ]
         },
         {
-          "name": "package.json",
-          "type": "file"
-        },
-        {
-          "name": "README.md",
+          "name": "go.mod",
           "type": "file"
         }
       ]
     },
-    "brief": "JWT Authentication: Implements secure user authentication using JSON Web Tokens (JWT), handling user sessions and protecting routes. JWT tokens consist of three parts: Header, Payload, Signature.",
+    "brief": "Rate Limiter: Implements a token bucket-based rate limiting algorithm with in-memory and Redis store options for managing rate limiting across clients. Provides an example usage in Go.",
     "files": [
       {
-        "name": "app.js",
-        "content": "const express = require('express');\nconst jwt = require('jsonwebtoken');\n\nconst app = express();\napp.use(express.json());\n\n// Secret key for JWT\nconst secretKey = 'your-secret-key';\n\n// Mock user data\nconst users = [\n  { id: 1, username: 'user1', password: 'password1' },\n  { id: 2, username: 'user2', password: 'password2' }\n];\n\n// Login route\napp.post('/login', (req, res) => {\n  const { username, password } = req.body;\n  const user = users.find(u => u.username === username && u.password === password);\n\n  if (user) {\n    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '1h' });\n    res.json({ token });\n  } else {\n    res.status(401).json({ message: 'Invalid credentials' });\n  }\n});\n\n// Protected route\napp.get('/protected', authenticateToken, (req, res) => {\n  res.json({ message: 'Access granted to protected route', user: req.user });\n});\n\n// Middleware to authenticate token\nfunction authenticateToken(req, res, next) {\n  const authHeader = req.headers['authorization'];\n  const token = authHeader && authHeader.split(' ')[1];\n\n  if (token == null) return res.sendStatus(401);\n\n  jwt.verify(token, secretKey, (err, user) => {\n    if (err) return res.sendStatus(403);\n    req.user = user;\n    next();\n  });\n}\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+        "name": "main.go",
+        "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"time\"\n\t\"ratelimiter\"\n\t\"ratelimiter/store\"\n)\n\nfunc main() {\n\tstore := store.NewMemoryStore()\n\tlimiter := ratelimiter.NewTokenBucketLimiter(5, 10)\n\tstore.SetLimiter(\"client-1\", limiter)\n\n\tfor i := 0; i < 15; i++ {\n\t\tif store.GetLimiter(\"client-1\").Allow() {\n\t\t\tfmt.Println(\"Request allowed\")\n\t\t} else {\n\t\t\tfmt.Println(\"Rate limit exceeded\")\n\t\t}\n\t\ttime.Sleep(200 * time.Millisecond)\n\t}\n}\n"
       },
       {
-        "name": "new.app.js",
-        "content": "const new = 'app.js/'"
+        "name": "limiter.go",
+        "content": "import (\n\t\"sync\"\n\t\"time\"\n)\n\n// RateLimiter interface\n type RateLimiter interface {\n\tAllow() bool\n}\n\n// TokenBucketLimiter implements RateLimiter\n type TokenBucketLimiter struct {\n\t// tokens per second\n\tRate float64\n\t// maximum tokens\n\tCapacity int64\n\t// last update time\n\tlastUpdate time.Time\n\t// current tokens\n\tcurrentTokens int64\n\t// mutex for synchronization\n\tmu sync.Mutex\n}\n\n// NewTokenBucketLimiter returns a new TokenBucketLimiter\nfunc NewTokenBucketLimiter(rate float64, capacity int64) *TokenBucketLimiter {\n\treturn &TokenBucketLimiter{\n\t\tRate:       rate,\n\t\tCapacity:   capacity,\n\t\tlastUpdate: time.Now(),\n\t\tcurrentTokens: capacity,\n\t}\n}"
+      },
+      {
+        "name": "memory.go",
+        "content": "package store\n\nimport (\n\t\"sync\"\n)\n\n// MemoryStore implements in-memory storage for rate limiting\n type MemoryStore struct {\n\t// map of client IDs to their respective rate limiters\n\tlimiterMap map[string]*ratelimiter.TokenBucketLimiter\n\tmu         sync.RWMutex\n}\n\n// NewMemoryStore returns a new MemoryStore\nfunc NewMemoryStore() *MemoryStore {\n\treturn &MemoryStore{\n\t\tlimiterMap: make(map[string]*ratelimiter.TokenBucketLimiter),\n\t}\n}\n\n// GetLimiter returns the rate limiter for a client ID\nfunc (m *MemoryStore) GetLimiter(clientID string) *ratelimiter.TokenBucketLimiter {\n\tm.mu.RLock()\n\tdefer m.mu.RUnlock()\n\n\treturn m.limiterMap[clientID]\n}\n\n// SetLimiter sets the rate limiter for a client ID\nfunc (m *MemoryStore) SetLimiter(clientID string, limiter *ratelimiter.TokenBucketLimiter) {\n\tm.mu.Lock()\n\tdefer m.mu.Unlock()\n\n\tm.limiterMap[clientID] = limiter\n}"
+      },
+      {
+        "name": "tokens.go",
+        "content": "package ratelimiter\n\nimport (\n\t\"fmt\"\n\t\"time\"\n)\n\n// Token represents a rate limiter token\ntype Token struct {\n\t// token ID\n\tID string\n\t// client ID\n\tClientID string\n\t// expiration time\n\tExpiresAt time.Time\n}\n\n// NewToken returns a new token\nfunc NewToken(clientID string, expiresAt time.Time) *Token {\n\treturn &Token{\n\t\tID:        fmt.Sprintf(\"%s-%d\", clientID, time.Now().UnixNano()),\n\t\tClientID:  clientID,\n\t\tExpiresAt: expiresAt,\n\t}\n}\n\n// IsValid checks if a token is valid\nfunc (t *Token) IsValid() bool {\n\treturn time.Now().Before(t.ExpiresAt)\n}"
+      },
+      {
+        "name": "utils.go",
+        "content": "package ratelimiter\n\nimport (\n\t\"encoding/json\"\n\t\"errors\"\n\t\"fmt\"\n\t\"net/http\"\n\t\"strings\"\n)\n\n// Error represents a rate limiter error\ntype Error struct {\n\tCode    int\n\tMessage string\n}\n\nfunc (e *Error) Error() string {\n\treturn fmt.Sprintf(\"rate limiter error: %d %s\", e.Code, e.Message)\n}\n\n// HTTPError returns an HTTP error response\nfunc HTTPError(w http.ResponseWriter, err error) {\n\tvar rateErr *Error\n\tif errors.As(err, &rateErr) {\n\t\thttp.Error(w, rateErr.Message, rateErr.Code)\n\t\treturn\n\t}\n\n\thttp.Error(w, err.Error(), http.StatusInternalServerError)\n}\n\n// ParseClientID extracts the client ID from an HTTP request\nfunc ParseClientID(r *http.Request) string {\n\tclientID := r.Header.Get(\"X-Client-ID\")\n\tif clientID == \"\" {\n\t\tclientID = r.RemoteAddr\n\t}\n\treturn clientID\n}\n\n// JSONResponse returns a JSON response\nfunc JSONResponse(w http.ResponseWriter, data interface{}) {\n\tjsonData, err := json.Marshal(data)\n\tif err != nil {\n\t\tHTTPError(w, err)\n\t\treturn\n\t}\n\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tw.Write(jsonData)\n}"
+      },
+      {
+        "name": "redis.go",
+        "content": "package store\n\nimport (\n\tcontext\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"sync\"\n\n\t\"github.com/go-redis/redis/v8\"\n\t\"ratelimiter\"\n)\n\n// RedisStore implements Redis-based storage for rate limiting\ntype RedisStore struct {\n\tclient *redis.Client\n\tprefix string\n\tmu     sync.RWMutex\n}\n\n// NewRedisStore returns a new RedisStore\nfunc NewRedisStore(addr string, prefix string) *RedisStore {\n\tclient := redis.NewClient(&redis.Options{\n\t\tAddr: addr,\n\t})\n\n\treturn &RedisStore{\n\t\tclient: client,\n\t\tprefix: prefix,\n\t}\n}\n\n// GetLimiter returns the rate limiter for a client ID\nfunc (r *RedisStore) GetLimiter(clientID string) *ratelimiter.TokenBucketLimiter {\n\tr.mu.RLock()\n\tdefer r.mu.RUnlock()\n\n\tkey := fmt.Sprintf(\"%s:%s\", r.prefix, clientID)\n\tdata, err := r.client.Get(context.Background(), key).Result()\n\tif err != nil {\n\t\treturn nil\n\t}\n\n\tvar limiter ratelimiter.TokenBucketLimiter\n\terr = json.Unmarshal([]byte(data), &limiter)\n\tif err != nil {\n\t\treturn nil\n\t}\n\n\treturn &limiter\n}\n\n// SetLimiter sets the rate limiter for a client ID\nfunc (r *RedisStore) SetLimiter(clientID string, limiter *ratelimiter.TokenBucketLimiter) {\n\tr.mu.Lock()\n\tdefer r.mu.Unlock()\n\n\tkey := fmt.Sprintf(\"%s:%s\", r.prefix, clientID)\n\tdata, err := json.Marshal(limiter)\n\tif err != nil {\n\t\treturn\n\t}\n\n\tr.client.Set(context.Background(), key, data, 0)\n}"
+      },
+      {
+        "name": "main.go",
+        "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"time\"\n\n\t\"ratelimiter\"\n\t\"ratelimiter/store\"\n)\n\nfunc main() {\n\t// create a new memory store\n\tstore := store.NewMemoryStore()\n\n\t// create a new rate limiter\n\tlimiter := ratelimiter.NewTokenBucketLimiter(5, 10)\n\n\t// set the rate limiter for a client ID\n\tstore.SetLimiter(\"client-1\", limiter)\n\n\t// simulate requests\n\tfor i := 0; i < 15; i++ {\n\t\tif store.GetLimiter(\"client-1\").Allow() {\n\t\t\tfmt.Println(\"Request allowed\")\n\t\t} else {\n\t\t\tfmt.Println(\"Rate limit exceeded\")\n\t\t}\n\n\t\ttime.Sleep(200 * time.Millisecond)\n\t}\n}"
       }
     ]
   },
   {
     "id": 2,
-    "title": "RESTful API with Express",
-    "languages": "Node.js",
-    "desc": "RESTful API: Develops a basic CRUD API using Express.js, handling resource creation, retrieval, updates, and deletion.",
-    "link": "/post/restful-api-express",
+    "title": "CSRF Protection",
+    "languages": "Go",
+    "desc": "CSRF Protection: Implements protection against Cross-Site Request Forgery (CSRF) attacks using tokens, ensuring the safety of user requests and sessions.",
+    "link": "/post/csrf-protection",
     "projectStructure": {
-      "name": "restful-api",
+      "name": "csrf",
       "type": "folder",
       "children": [
         {
-          "name": "src",
+          "name": "csrf",
           "type": "folder",
           "children": [
             {
-              "name": "controllers",
+              "name": "csrf.go",
+              "type": "file"
+            },
+            {
+              "name": "token.go",
+              "type": "file"
+            },
+            {
+              "name": "storage",
               "type": "folder",
               "children": [
                 {
-                  "name": "userController.js",
+                  "name": "memory.go",
+                  "type": "file"
+                },
+                {
+                  "name": "redis.go",
                   "type": "file"
                 }
               ]
             },
             {
-              "name": "models",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "userModel.js",
-                  "type": "file"
-                }
-              ]
+              "name": "utils.go",
+              "type": "file"
+            }
+          ]
+        },
+        {
+          "name": "examples",
+          "type": "folder",
+          "children": [
+            {
+              "name": "main.go",
+              "type": "file"
+            }
+          ]
+        },
+        {
+          "name": "tests",
+          "type": "folder",
+          "children": [
+            {
+              "name": "csrf_test.go",
+              "type": "file"
             },
             {
-              "name": "routes",
+              "name": "token_test.go",
+              "type": "file"
+            }
+          ]
+        },
+        {
+          "name": "main.go",
+          "type": "file"
+        },
+        {
+          "name": "go.mod",
+          "type": "file"
+        }
+      ]
+    },
+    "brief": "CSRF Protection: Implements token-based protection against Cross-Site Request Forgery (CSRF) attacks. The system generates secure tokens and stores them in-memory or in Redis for request validation.",
+    "files": [
+      {
+        "name": "csrf.go",
+        "content": "package csrf\n\nimport (\n\t\"crypto/rand\"\n\t\"encoding/base64\"\n\t\"net/http\"\n\t\"time\"\n)\n\n// CSRF represents a CSRF protection instance\ntype CSRF struct {\n\tstorage Storage\n\tsecret  []byte\n}\n\n// NewCSRF returns a new CSRF instance\nfunc NewCSRF(storage Storage, secret string) *CSRF {\n\treturn &CSRF{\n\t\tstorage: storage,\n\t\tsecret:  []byte(secret),\n\t}\n}\n\n// GenerateToken generates a CSRF token\nfunc (c *CSRF) GenerateToken(r *http.Request) (string, error) {\n\ttokenBytes := make([]byte, 32)\n\tif _, err := rand.Read(tokenBytes); err != nil {\n\t\treturn \"\", err\n\t}\n\n\ttoken := base64.StdEncoding.EncodeToString(tokenBytes)\n\tif err := c.storage.StoreToken(r, token, time.Now().Add(30*time.Minute)); err != nil {\n\t\treturn \"\", err\n\t}\n\n\treturn token, nil\n}\n\n// ValidateToken validates a CSRF token\nfunc (c *CSRF) ValidateToken(r *http.Request, token string) bool {\n\tstoredToken, err := c.storage.RetrieveToken(r)\n\tif err != nil {\n\t\treturn false\n\t}\n\n\treturn storedToken == token\n}"
+      },
+      {
+        "name": "token.go",
+        "content": "package csrf\n\nimport (\n\t\"time\"\n\t\"net/http\"\n)\n\n// Token represents a CSRF token\ntype Token struct {\n\tValue  string\n\tExpiry time.Time\n}\n\n// Storage represents a CSRF token storage interface\ntype Storage interface {\n\tStoreToken(r *http.Request, token string, expiry time.Time) error\n\tRetrieveToken(r *http.Request) (string, error)\n}"
+      },
+      {
+        "name": "memory.go",
+        "content": "package storage\n\nimport (\n\t\"errors\"\n\t\"sync\"\n\t\"csrf\"\n)\n\n// MemoryStorage implements in-memory CSRF token storage\ntype MemoryStorage struct {\n\ttokens map[string]csrf.Token\n\tmu     sync.RWMutex\n}\n\n// NewMemoryStorage returns a new MemoryStorage instance\nfunc NewMemoryStorage() *MemoryStorage {\n\treturn &MemoryStorage{\n\t\ttokens: make(map[string]csrf.Token),\n\t}\n}\n\n// StoreToken stores a CSRF token\nfunc (m *MemoryStorage) StoreToken(r *http.Request, token string, expiry time.Time) error {\n\tm.mu.Lock()\n\tdefer m.mu.Unlock()\n\n\tm.tokens[r.RemoteAddr] = csrf.Token{\n\t\tValue:  token,\n\t\tExpiry: expiry,\n\t}\n\n\treturn nil\n}\n\n// RetrieveToken retrieves a CSRF token\nfunc (m *MemoryStorage) RetrieveToken(r *http.Request) (string, error) {\n\tm.mu.RLock()\n\tdefer m.mu.RUnlock()\n\ntoken, ok := m.tokens[r.RemoteAddr]\n\tif !ok {\n\t\treturn \"\", errors.New(\"token not found\")\n\t}\n\n\treturn token.Value, nil\n}"
+      },
+      {
+        "name": "redis.go",
+        "content": "package storage\n\nimport (\n\t\"context\"\n\t\"errors\"\n\t\"github.com/go-redis/redis/v8\"\n\t\"sync\"\n\t\"csrf\"\n)\n\n// RedisStorage implements Redis-based CSRF token storage\ntype RedisStorage struct {\n\tclient *redis.Client\n\tmu     sync.RWMutex\n}\n\n// NewRedisStorage returns a new RedisStorage instance\nfunc NewRedisStorage(addr string) *RedisStorage {\n\tclient := redis.NewClient(&redis.Options{\n\t\tAddr: addr,\n\t})\n\treturn &RedisStorage{client: client}\n}\n\n// StoreToken stores a CSRF token in Redis\nfunc (r *RedisStorage) StoreToken(r *http.Request, token string, expiry time.Time) error {\n\tctx := context.Background()\n\tr.mu.Lock()\n\tdefer r.mu.Unlock()\n\n\tif err := r.client.Set(ctx, r.RemoteAddr, token, expiry.Sub(time.Now())).Err(); err != nil {\n\t\treturn err\n\t}\n\n\treturn nil\n}\n\n// RetrieveToken retrieves a CSRF token from Redis\nfunc (r *RedisStorage) RetrieveToken(r *http.Request) (string, error) {\n\tctx := context.Background()\n\tr.mu.RLock()\n\tdefer r.mu.RUnlock()\n\n\ttoken, err := r.client.Get(ctx, r.RemoteAddr).Result()\n\tif err == redis.Nil {\n\t\treturn \"\", errors.New(\"token not found\")\n\t} else if err != nil {\n\t\treturn \"\", err\n\t}\n\n\treturn token, nil\n}"
+      },
+      {
+        "name": "main.go",
+        "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"csrf\"\n\t\"csrf/storage\"\n)\n\nfunc main() {\n\tstorage := storage.NewMemoryStorage()\n\tcsrf := csrf.NewCSRF(storage, \"secret_key\")\n\n\thttp.HandleFunc(\"/generate\", func(w http.ResponseWriter, r *http.Request) {\n\t\ttoken, err := csrf.GenerateToken(r)\n\t\tif err != nil {\n\t\t\thttp.Error(w, err.Error(), http.StatusInternalServerError)\n\t\t\treturn\n\t\t}\n\n\t\tfmt.Fprintf(w, \"CSRF Token: %s\", token)\n\t})\n\n\thttp.HandleFunc(\"/validate\", func(w http.ResponseWriter, r *http.Request) {\n\t\ttoken := r.Header.Get(\"X-CSRF-Token\")\n\t\tif !csrf.ValidateToken(r, token) {\n\t\t\thttp.Error(w, \"invalid CSRF token\", http.StatusForbidden)\n\t\t\treturn\n\t\t}\n\n\t\tfmt.Fprintf(w, \"CSRF Token is valid\")\n\t})\n\n\thttp.ListenAndServe(\":8080\", nil)\n}"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Messaging Queue System",
+    "languages": "Node.js",
+    "desc": "A basic messaging queue system with memory and Redis storage options. The system includes consuming messages, with planned features such as message retries and monitoring.",
+    "link": "/post/messaging-queue-system",
+    "projectStructure": {
+      "name": "messaging-queue",
+      "type": "folder",
+      "children": [
+        {
+          "name": "main.js",
+          "type": "file"
+        },
+        {
+          "name": "queue",
+          "type": "folder",
+          "children": [
+            {
+              "name": "queue.js",
+              "type": "file"
+            },
+            {
+              "name": "message.js",
+              "type": "file"
+            },
+            {
+              "name": "storage",
               "type": "folder",
               "children": [
                 {
-                  "name": "userRoutes.js",
+                  "name": "memory.js",
+                  "type": "file"
+                },
+                {
+                  "name": "redis.js",
                   "type": "file"
                 }
               ]
@@ -126,66 +236,60 @@
           ]
         },
         {
-          "name": "app.js",
+          "name": "producer.js",
+          "type": "file"
+        },
+        {
+          "name": "consumer.js",
           "type": "file"
         },
         {
           "name": "package.json",
           "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
         }
       ]
     },
-    "brief": "This project demonstrates a simple RESTful API for user data management, handling basic CRUD operations (Create, Read, Update, Delete) with Express.js.",
+    "brief": "A messaging queue system implemented in Node.js with support for memory and Redis storage. The system includes essential functionality like producing and consuming messages, with planned features such as message retries, dead letter queues, expiration, and monitoring.",
     "files": [
       {
-        "name": "app.js",
-        "content": "const express = require('express');\nconst userRoutes = require('./src/routes/userRoutes');\n\nconst app = express();\napp.use(express.json());\n\napp.use('/users', userRoutes);\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+        "name": "queue/queue.js",
+        "content": "class Queue {\n  constructor(storage) {\n    this.storage = storage;\n    this.messageId = 0;\n  }\n\n  produce(message) {\n    const messageId = this.messageId++;\n    this.storage.store(messageId, message);\n    return messageId;\n  }\n\n  consume() {\n    const messageId = this.storage.retrieve();\n    if (!messageId) return null;\n    const message = this.storage.fetch(messageId);\n    this.storage.delete(messageId);\n    return message;\n  }\n}\n\nmodule.exports = Queue;"
       },
       {
-        "name": "userController.js",
-        "content": "const express = require('express');\nconst userRoutes = require('./src/routes/userRoutes');\n\nconst app = express();\napp.use(express.json());\n\napp.use('/users', userRoutes);\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+        "name": "queue/message.js",
+        "content": "class Message {\n  constructor(data, options) {\n    this.data = data;\n    this.options = options;\n  }\n}\n\nmodule.exports = Message;"
+      },
+      {
+        "name": "queue/storage/memory.js",
+        "content": "class MemoryStorage {\n  constructor() {\n    this.messages = {};\n  }\n\n  store(messageId, message) {\n    this.messages[messageId] = message;\n  }\n\n  retrieve() {\n    const messageId = Object.keys(this.messages)[0];\n    return messageId;\n  }\n\n  fetch(messageId) {\n    return this.messages[messageId];\n  }\n\n  delete(messageId) {\n    delete this.messages[messageId];\n  }\n}\n\nmodule.exports = MemoryStorage;"
+      },
+      {
+        "name": "queue/storage/redis.js",
+        "content": "const Redis = require('redis');\n\nclass RedisStorage {\n  constructor(redisUrl) {\n    this.client = Redis.createClient(redisUrl);\n  }\n\n  store(messageId, message) {\n    this.client.hset('messages', messageId, JSON.stringify(message));\n  }\n\n  retrieve() {\n    return new Promise((resolve, reject) => {\n      this.client.hkeys('messages', (err, messageIds) => {\n        if (err) reject(err);\n        resolve(messageIds[0]);\n      });\n    });\n  }\n\n  fetch(messageId) {\n    return new Promise((resolve, reject) => {\n      this.client.hget('messages', messageId, (err, message) => {\n        if (err) reject(err);\n        resolve(JSON.parse(message));\n      });\n    });\n  }\n\n  delete(messageId) {\n    this.client.hdel('messages', messageId);\n  }\n}\n\nmodule.exports = RedisStorage;"
+      },
+      {
+        "name": "producer.js",
+        "content": "const Queue = require('./queue/queue');\nconst Message = require('./queue/message');\nconst MemoryStorage = require('./queue/storage/memory');\n\nconst queue = new Queue(new MemoryStorage());\n\nconst message = new Message({ data: 'Hello, world!' });\nconst messageId = queue.produce(message);\nconsole.log(`Produced message with ID ${messageId}`);"
+      },
+      {
+        "name": "consumer.js",
+        "content": "const Queue = require('./queue/queue');\nconst MemoryStorage = require('./queue/storage/memory');\n\nconst queue = new Queue(new MemoryStorage());\n\nconst message = queue.consume();\nconsole.log(`Consumed message: ${message.data}`);"
       }
     ]
   },
   {
     "id": 3,
-    "title": "GraphQL API with Apollo Server",
+    "title": "SSL/TLS Express Server with Self-Signed Certificate",
     "languages": "Node.js",
-    "desc": "GraphQL API: Builds a GraphQL API using Apollo Server, defining schemas, resolvers, and integrating queries and mutations for user data.",
-    "link": "/post/graphql-api-apollo",
+    "desc": "Guide for setting up an Express server with SSL/TLS using a self-signed certificate generated via openssl-nodejs.",
+    "link": "/post/ssl-tls-express-server",
     "projectStructure": {
-      "name": "graphql-api",
+      "name": "ssl-tls-server",
       "type": "folder",
       "children": [
         {
-          "name": "src",
-          "type": "folder",
-          "children": [
-            {
-              "name": "schemas",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "userSchema.js",
-                  "type": "file"
-                }
-              ]
-            },
-            {
-              "name": "resolvers",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "userResolvers.js",
-                  "type": "file"
-                }
-              ]
-            }
-          ]
+          "name": "generate-cert.js",
+          "type": "file"
         },
         {
           "name": "server.js",
@@ -194,171 +298,81 @@
         {
           "name": "package.json",
           "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
         }
       ]
     },
-    "brief": "This project implements a simple GraphQL API for user data using Apollo Server, with sample queries and mutations.",
+    "brief": "A step-by-step guide to generate private keys, certificate signing requests (CSRs), and self-signed certificates using Node.js and openssl-nodejs, and how to set up an SSL/TLS Express server.",
     "files": [
       {
-        "name": "server.js",
-        "content": "const { ApolloServer } = require('apollo-server');\nconst typeDefs = require('./src/schemas/userSchema');\nconst resolvers = require('./src/resolvers/userResolvers');\n\nconst server = new ApolloServer({ typeDefs, resolvers });\n\nserver.listen().then(({ url }) => {\n  console.log(`🚀 Server ready at ${url}`);\n});"
-      }
-    ]
-  },
-  {
-    "id": 4,
-    "title": "Socket.IO Real-time Chat App",
-    "languages": "Node.js",
-    "desc": "Socket.IO Chat App: Implements a real-time chat application using Socket.IO, enabling real-time communication between connected users.",
-    "link": "/post/socketio-chat-app",
-    "projectStructure": {
-      "name": "chat-app",
-      "type": "folder",
-      "children": [
-        {
-          "name": "src",
-          "type": "folder",
-          "children": [
-            {
-              "name": "public",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "index.html",
-                  "type": "file"
-                }
-              ]
-            },
-            {
-              "name": "server.js",
-              "type": "file"
-            }
-          ]
-        },
-        {
-          "name": "package.json",
-          "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
-        }
-      ]
-    },
-    "brief": "This project creates a real-time chat application where users can join rooms and send messages in real-time using Socket.IO.",
-    "files": [
+        "name": "Step 1: Install required packages",
+        "content": "bash\nnpm install openssl-nodejs express\n"
+      },
       {
-        "name": "server.js",
-        "content": "const express = require('express');\nconst http = require('http');\nconst socketIo = require('socket.io');\n\nconst app = express();\nconst server = http.createServer(app);\nconst io = socketIo(server);\n\napp.use(express.static('src/public'));\n\nio.on('connection', (socket) => {\n  console.log('A user connected');\n\n  socket.on('message', (msg) => {\n    io.emit('message', msg);\n  });\n\n  socket.on('disconnect', () => {\n    console.log('User disconnected');\n  });\n});\n\nserver.listen(3000, () => console.log('Server running on port 3000'));"
+        "name": "Step 2: Generate private key and certificate signing request (CSR)",
+        "content": "js\nconst openssl = require('openssl-nodejs');\n\n// Generate private key\nconst privateKey = openssl.genPrivateKey(2048);\n\n// Generate certificate signing request (CSR)\nconst csr = openssl.genCsr(privateKey, {\n  country: 'US',\n  state: 'California',\n  locality: 'San Francisco',\n  organization: 'My Company',\n  organizationalUnit: 'Development',\n  commonName: '(link unavailable)',\n  emailAddress: 'admin@(link unavailable)',\n});\n\nconsole.log(privateKey);\nconsole.log(csr);\n\n\nRun the script to generate the private key and CSR:\n\nbash\nnode generate-cert.js\n"
+      },
+      {
+        "name": "Step 3: Generate self-signed certificate",
+        "content": "js\nconst openssl = require('openssl-nodejs');\nconst fs = require('fs');\n\n// Load private key and CSR\nconst privateKey = fs.readFileSync('privateKey.pem', 'utf8');\nconst csr = fs.readFileSync('csr.pem', 'utf8');\n\n// Generate self-signed certificate\nconst cert = openssl.genCert(privateKey, csr, {\n  days: 365,\n  extensions: [\n    {\n      name: 'subjectAltName',\n      value: 'DNS:(link unavailable)',\n    },\n  ],\n});\n\nconsole.log(cert);\n\n\nRun the script to generate the self-signed certificate:\n\nbash\nnode generate-cert.js\n"
+      },
+      {
+        "name": "Step 4: Create Express server with SSL/TLS",
+        "content": "js\nconst express = require('express');\nconst https = require('https');\nconst fs = require('fs');\n\nconst app = express();\n\nconst privateKey = fs.readFileSync('privateKey.pem', 'utf8');\nconst cert = fs.readFileSync('cert.pem', 'utf8');\n\nconst options = {\n  key: privateKey,\n  cert: cert,\n};\n\nhttps.createServer(options, app).listen(443, () => {\n  console.log('Server listening on port 443');\n});\n\napp.get('/', (req, res) => {\n  res.send('Hello, world!');\n});\n\n\nRun the server:\n\nbash\nnode server.js\n\n\nOpen a web browser and navigate to https://localhost to verify the SSL/TLS connection.\n\n**Note:** This is a self-signed certificate, which will not be trusted by default by most browsers. To obtain a trusted certificate, you should purchase one from a reputable certificate authority (CA)."
       }
     ]
   },
   {
     "id": 5,
-    "title": "Node.js Task Scheduler",
-    "languages": "Node.js",
-    "desc": "Task Scheduler: Implements a simple task scheduler using Node.js and the 'node-cron' library to schedule and manage repetitive tasks.",
-    "link": "/post/node-task-scheduler",
+    "title": "Optimized Logging in Django",
+    "languages": "Python, Django",
+    "desc": "A guide to setting up an optimized logging system in Django to handle different log levels, outputs, and external services.  Its a basic logging system for beginners to integrate",
+    "link": "/post/optimized-logging-django",
     "projectStructure": {
-      "name": "task-scheduler",
+      "name": "django-optimized-logging",
       "type": "folder",
       "children": [
         {
-          "name": "src",
+          "name": "my_project",
           "type": "folder",
           "children": [
             {
-              "name": "tasks",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "task1.js",
-                  "type": "file"
-                },
-                {
-                  "name": "task2.js",
-                  "type": "file"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "scheduler.js",
-          "type": "file"
-        },
-        {
-          "name": "package.json",
-          "type": "file"
-        },
-        {
-          "name": "README.md",
-          "type": "file"
-        }
-      ]
-    },
-    "brief": "This project demonstrates how to create a task scheduler using Node.js and 'node-cron' to automate and manage scheduled tasks like sending notifications or backups.",
-    "files": [
-      {
-        "name": "scheduler.js",
-        "content": "const cron = require('node-cron');\n\ncron.schedule('0 0 * * *', () => {\n  console.log('Running a task every midnight');\n});\n\ncron.schedule('*/5 * * * *', () => {\n  console.log('Running a task every 5 minutes');\n});"
-      }
-    ]
-  },
-  {
-    "title": "Hello",
-    "languages": "JavaScript",
-    "desc": "This is a project named in projects",
-    "link": "/post/hello-js",
-    "brief": "more briefing of the project",
-    "projectStructure": {
-      "name": "root",
-      "type": "folder",
-      "children": [
-        {
-          "name": "app.js",
-          "type": "file"
-        },
-        {
-          "name": "src",
-          "type": "folder",
-          "children": [
-            {
-              "name": "controllers",
-              "type": "folder",
-              "children": [
-                {
-                  "name": "useControllers.js",
-                  "type": "file"
-                }
-              ]
+              "name": "settings.py",
+              "type": "file"
             },
             {
-              "name": "index.js",
+              "name": "views.py",
               "type": "file"
             }
           ]
+        },
+        {
+          "name": "manage.py",
+          "type": "file"
+        },
+        {
+          "name": "requirements.txt",
+          "type": "file"
+        },
+        {
+          "name": "bash_commands.sh",
+          "type": "file"
         }
       ]
     },
+    "brief": "A guide to setting up an optimized logging system in Django to handle different log levels, outputs, and external services.",
     "files": [
       {
-        "name": "app.js",
-        "content": "some content on this file"
+        "name": "bash_commands.sh",
+        "content": "bash commands\npip install django sentry-sdk\npython manage.py runserver\n"
       },
       {
-        "name": "index.js",
-        "content": "some more content on this file"
+        "name": "settings.py",
+        "content": "\nimport os\nimport sentry_sdk\nfrom sentry_sdk.integrations.django import DjangoIntegration\n\nsentry_sdk.init(\n    dsn='your-sentry-dsn',\n    integrations=[DjangoIntegration()],\n    traces_sample_rate=1.0,\n    send_default_pii=True\n)\n\nLOGGING = {\n    'version': 1,\n    'disable_existing_loggers': False,\n    'formatters': {\n        'verbose': {\n            'format': '{levelname} {asctime} {module} {message}',\n            'style': '{',\n        },\n        'simple': {\n            'format': '{levelname} {message}',\n            'style': '{',\n        },\n    },\n    'handlers': {\n        'file': {\n            'level': 'DEBUG',\n            'class': 'logging.FileHandler',\n            'filename': os.path.join(BASE_DIR, 'debug.log'),\n            'formatter': 'verbose',\n        },\n        'console': {\n            'level': 'INFO',\n            'class': 'logging.StreamHandler',\n            'formatter': 'simple',\n        },\n        'sentry': {\n            'level': 'ERROR',\n            'class': 'sentry_sdk.integrations.logging.EventHandler',\n        },\n    },\n    'loggers': {\n        'django': {\n            'handlers': ['file', 'console', 'sentry'],\n            'level': 'DEBUG',\n            'propagate': True,\n        },\n        'myapp': {\n            'handlers': ['file', 'console'],\n            'level': 'INFO',\n            'propagate': False,\n        },\n    },\n}\n"
       },
       {
-        "name": "useController.js",
-        "content": "some more content for the booting"
+        "name": "views.py",
+        "content": "\nimport logging\nfrom django.http import HttpResponse\n\nlogger = logging.getLogger('myapp')\n\ndef my_view(request):\n    logger.info('Info level log message')\n    try:\n        1 / 0  # Deliberate error\n    except ZeroDivisionError as e:\n        logger.error('Error occurred: %s', e)\n    return HttpResponse('Check logs for output')\n"
       }
-    ],
-    "id": 6
+    ]
   }
 ]
