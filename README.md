@@ -1,6 +1,6 @@
 # BackCode | Home for the optimized backend head start codes
 
-![Banner](./nick/banner.png)
+![Banner](./banner.png)
 
 I am building a shadcn for backend development. Detailed project structure and code for every file just copy paste to your project and give more focus to your core functionalities !!
 
