@@ -374,5 +374,202 @@
         "content": "\nimport logging\nfrom django.http import HttpResponse\n\nlogger = logging.getLogger('myapp')\n\ndef my_view(request):\n    logger.info('Info level log message')\n    try:\n        1 / 0  # Deliberate error\n    except ZeroDivisionError as e:\n        logger.error('Error occurred: %s', e)\n    return HttpResponse('Check logs for output')\n"
       }
     ]
+  },
+  {
+    "id": 6,
+    "title": "Improved Error Handling for Authentication in Go",
+    "languages": "Golang",
+    "desc": "A project that implements robust error handling for user authentication using JWT in Go.",
+    "link": "/post/improved-error-handling-auth-go",
+    "projectStructure": {
+      "name": "go-auth-error-handling",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "main.go",
+              "type": "file"
+            },
+            {
+              "name": "auth",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "handler.go",
+                  "type": "file"
+                },
+                {
+                  "name": "errors.go",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "go.mod",
+          "type": "file"
+        },
+        {
+          "name": "bash_commands.sh",
+          "type": "file"
+        }
+      ]
+    },
+    "brief":"Design and implement a robust error handling mechanism for user authentication using JSON Web Tokens (JWT) in Go. The system should ensure secure authentication, proper error handling, and informative error messages.",
+    "files": [
+      {
+        "name": "bash_commands.sh",
+        "content": "bash\ngo mod init go-auth-error-handling\ngo get -u github.com/dgrijalva/jwt-go\ngo run src/main.go\n"
+      },
+      {
+        "name": "go.mod",
+        "content": "\nmodule go-auth-error-handling\n\ngo 1.18\n\nrequire github.com/dgrijalva/jwt-go v3.2.0+incompatible\n"
+      },
+      {
+        "name": "main.go",
+        "content": "\npackage main\n\nimport (\n\t\"fmt\"\n\t\"log\"\n\t\"net/http\"\n\t\"./auth\"\n)\n\nfunc main() {\n\thttp.HandleFunc(\"/login\", auth.LoginHandler)\n\tfmt.Println(\"Server running on port 8080\")\n\tlog.Fatal(http.ListenAndServe(\":8080\", nil))\n}\n"
+      },
+      {
+        "name": "handler.go",
+        "content": "\npackage auth\n\nimport (\n\t\"encoding/json\"\n\t\"net/http\"\n)\n\ntype Credentials struct {\n\tUsername string `json:\"username\"`\n\tPassword string `json:\"password\"`\n}\n\nfunc LoginHandler(w http.ResponseWriter, r *http.Request) {\n\tif r.Method != http.MethodPost {\n\t\thttp.Error(w, \"Invalid request method\", http.StatusMethodNotAllowed)\n\t\treturn\n\t}\n\n\tvar creds Credentials\n\terr := json.NewDecoder(r.Body).Decode(&creds)\n\tif err != nil {\n\t\thttp.Error(w, \"Failed to decode JSON body\", http.StatusBadRequest)\n\t\treturn\n\t}\n\n\ttoken, err := AuthenticateUser(creds)\n\tif err != nil {\n\t\tHandleAuthenticationError(w, err)\n\t\treturn\n\t}\n\n\tw.WriteHeader(http.StatusOK)\n\tw.Write([]byte(token))\n}\n"
+      },
+      {
+        "name": "errors.go",
+        "content": "\npackage auth\n\nimport (\n\t\"errors\"\n\t\"net/http\"\n)\n\nvar (\n\tErrInvalidCredentials = errors.New(\"invalid username or password\")\n\tErrTokenCreationFailed = errors.New(\"failed to create token\")\n)\n\nfunc HandleAuthenticationError(w http.ResponseWriter, err error) {\n\tswitch err {\n\tcase ErrInvalidCredentials:\n\t\thttp.Error(w, \"Invalid credentials\", http.StatusUnauthorized)\n\tcase ErrTokenCreationFailed:\n\t\thttp.Error(w, \"Server error, unable to create token\", http.StatusInternalServerError)\n\tdefault:\n\t\thttp.Error(w, \"Unknown error occurred\", http.StatusInternalServerError)\n\t}\n}\n"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "API Rate Limiting and Caching in Go",
+    "languages": "Golang",
+    "desc": "A Golang project that implements API rate limiting using an in-memory store and response caching to reduce server load and enhance API performance.",
+    "link": "/post/api-rate-limiting-caching-go",
+    "brief": "This project demonstrates how to use middleware for rate limiting and response caching in Go, ensuring that API endpoints are protected from excessive requests and can return cached results when appropriate.",
+    "projectStructure": {
+      "name": "go-rate-limit-cache",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "main.go",
+              "type": "file"
+            },
+            {
+              "name": "middleware",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "rate_limit.go",
+                  "type": "file"
+                },
+                {
+                  "name": "cache.go",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "go.mod",
+          "type": "file"
+        },
+        {
+          "name": "bash_commands.sh",
+          "type": "file"
+        }
+      ]
+    },
+    "files": [
+      {
+        "name": "bash_commands.sh",
+        "content": "bash\ngo mod init go-rate-limit-cache\ngo get github.com/patrickmn/go-cache\ngo run src/main.go\n"
+      },
+      {
+        "name": "go.mod",
+        "content": "\nmodule go-rate-limit-cache\n\ngo 1.18\n\nrequire github.com/patrickmn/go-cache v2.1.0+incompatible\n"
+      },
+      {
+        "name": "main.go",
+        "content": "\npackage main\n\nimport (\n\t\"fmt\"\n\t\"log\"\n\t\"net/http\"\n\t\"./middleware\"\n)\n\nfunc main() {\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"/api\", func(w http.ResponseWriter, r *http.Request) {\n\t\tw.Write([]byte(\"API response\"))\n\t})\n\n\thandler := middleware.RateLimit(middleware.Cache(mux))\n\tfmt.Println(\"Server running on port 8080\")\n\tlog.Fatal(http.ListenAndServe(\":8080\", handler))\n}\n"
+      },
+      {
+        "name": "rate_limit.go",
+        "content": "\npackage middleware\n\nimport (\n\t\"net/http\"\n\t\"time\"\n)\n\nvar visitors = make(map[string]time.Time)\n\nfunc RateLimit(next http.Handler) http.Handler {\n\treturn http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {\n\t\tvisitor := r.RemoteAddr\n\t\tif lastRequest, exists := visitors[visitor]; exists {\n\t\t\tif time.Since(lastRequest) < time.Second {\n\t\t\t\thttp.Error(w, \"Too many requests\", http.StatusTooManyRequests)\n\t\t\t\treturn\n\t\t\t}\n\t\t}\n\t\tvisitors[visitor] = time.Now()\n\t\tnext.ServeHTTP(w, r)\n\t})\n}\n"
+      },
+      {
+        "name": "cache.go",
+        "content": "\npackage middleware\n\nimport (\n\t\"net/http\"\n\t\"github.com/patrickmn/go-cache\"\n\t\"time\"\n)\n\nvar c = cache.New(5*time.Minute, 10*time.Minute)\n\nfunc Cache(next http.Handler) http.Handler {\n\treturn http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {\n\t\tcachedResponse, found := c.Get(r.RequestURI)\n\t\tif found {\n\t\t\tw.Write([]byte(cachedResponse.(string)))\n\t\t\treturn\n\t\t}\n\t\tresponseRecorder := &ResponseWriter{ResponseWriter: w, StatusCode: 200}\n\t\tnext.ServeHTTP(responseRecorder, r)\n\t\tc.Set(r.RequestURI, responseRecorder.Body.String(), cache.DefaultExpiration)\n\t})\n}\n\ntype ResponseWriter struct {\n\thttp.ResponseWriter\n\tStatusCode int\n\tBody       *bytes.Buffer\n}\n"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "title": "XSS Protection in Node.js",
+    "languages": "Node.js",
+    "desc": "A Node.js project demonstrating how to implement Cross-Site Scripting (XSS) protection using libraries like `xss-clean` and `helmet` for securing user input and rendering.",
+    "link": "/post/xss-protection-nodejs",
+    "brief": "This project highlights how to protect a Node.js application from XSS attacks by sanitizing user inputs, escaping output, and using security-focused middleware like `xss-clean` and `helmet`.",
+    "projectStructure": {
+      "name": "node-xss-protection",
+      "type": "folder",
+      "children": [
+        {
+          "name": "src",
+          "type": "folder",
+          "children": [
+            {
+              "name": "main.js",
+              "type": "file"
+            },
+            {
+              "name": "utils",
+              "type": "folder",
+              "children": [
+                {
+                  "name": "sanitize.js",
+                  "type": "file"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "package.json",
+          "type": "file"
+        },
+        {
+          "name": "bash_commands.sh",
+          "type": "file"
+        }
+      ]
+    },
+    "files": [
+      {
+        "name": "bash_commands.sh",
+        "content": "```bash\nnpm init -y\nnpm install express helmet xss-clean\nnode src/main.js\n```"
+      },
+      {
+        "name": "package.json",
+        "content": "{\n  \"name\": \"node-xss-protection\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/main.js\",\n  \"dependencies\": {\n    \"express\": \"^4.17.1\",\n    \"helmet\": \"^4.6.0\",\n    \"xss-clean\": \"^0.1.1\"\n  }\n}\n"
+      },
+      {
+        "name": "main.js",
+        "content": "const express = require('express');\nconst helmet = require('helmet');\nconst xssClean = require('xss-clean');\nconst { sanitizeInput } = require('./utils/sanitize');\n\nconst app = express();\napp.use(helmet()); // Helmet to set various HTTP headers for security\napp.use(express.json());\napp.use(xssClean()); // XSS clean middleware to sanitize inputs\n\napp.post('/submit', (req, res) => {\n  const userInput = sanitizeInput(req.body.input);\n  res.send(`Your sanitized input: ${userInput}`);\n});\n\napp.listen(3000, () => {\n  console.log('Server running on http://localhost:3000');\n});\n"
+      },
+      {
+        "name": "sanitize.js",
+        "content": "const sanitizeHtml = require('sanitize-html');\n\nfunction sanitizeInput(input) {\n  return sanitizeHtml(input, {\n    allowedTags: [], // No HTML tags allowed\n    allowedAttributes: {}\n  });\n}\n\nmodule.exports = { sanitizeInput };\n"
+      }
+    ]
   }
+  
 ]
