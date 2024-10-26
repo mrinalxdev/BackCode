@@ -15,7 +15,7 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-rose-100 to-teal-100">
+    <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-rose-100 to-teal-100 dark:from-black dark:to-slate-900">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <Banner />

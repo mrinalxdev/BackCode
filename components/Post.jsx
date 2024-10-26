@@ -12,15 +12,15 @@ const Post = ({ title, languages, desc, link }) => {
   return (
     <div className="size-xl mx-4">
       <Link href={`${link}`}>
-        <Card className="cursor-pointer hover:shadow-xl">
+        <Card className="cursor-pointer hover:shadow-xl transition-all duration-200 dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle>{title}</CardTitle>
+            <CardTitle className="dark:text-white">{title}</CardTitle>
             <div>
-              <Badge>{languages}</Badge>
+              <Badge className="dark:bg-gray-700 dark:text-white">{languages}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <CardDescription>{desc}</CardDescription>
+            <CardDescription className="dark:text-gray-300">{desc}</CardDescription>
           </CardContent>
         </Card>
       </Link>

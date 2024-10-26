@@ -56,9 +56,9 @@ const ProjectStructure = ({ structure }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-4 max-w-md w-full">
-      <h2 className="text-lg font-semibold mb-4">Project Structure</h2>
-      <div className="rounded-md">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 max-w-md w-full">
+      <h2 className="text-lg font-semibold mb-4 dark:text-white">Project Structure</h2>
+      <div className="rounded-md dark:text-gray-300">
         {structure ? renderStructure(structure) : <p>No structure available</p>}
       </div>
     </div>

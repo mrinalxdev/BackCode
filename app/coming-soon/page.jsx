@@ -4,38 +4,36 @@ import Link from "next/link";
 
 const ComingSoon = () => {
   return (
-    <div className="h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-rose-100 to-teal-100">
+    <div className="h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-rose-100 to-teal-100 dark:from-black dark:to-slate-900">
       <Navbar />
 
       <div className="mx-auto max-w-[70%] mt-[8rem] h-[70%] ">
         <div className="text-center flex items-center justify-center h-[80%] flex-col">
           <Biceps />
           <div className="flex flex-col text-center">
-            <h1 className="mt-2 font-semibold text-xl font-sans">
+            <h1 className="mt-2 font-semibold text-xl font-sans dark:text-gray-200">
               We're still
             </h1>
-            <h1 className="mt-2 text-[5rem] font-bold font-sans">
+            <h1 className="mt-2 text-[5rem] font-bold font-sans dark:text-white">
               COOKING UP NEW FEATURES.
             </h1>
-            <h1 className="mt-4 text-2xl">
+            <h1 className="mt-4 text-2xl dark:text-gray-200">
               I will be launching few features soon next month !! <br /> Stay
               Tune.
             </h1>
           </div>
           <Link href={"https://x.com/Hi_Mrinal"}>
-            <div className="mt-[5.5rem] flex items-center gap-5 bg-gray-400 px-2 py-2 rounded-full cursor-pointer">
+            <div className="mt-[5.5rem] flex items-center gap-5 bg-gray-400 dark:bg-gray-700 px-2 py-2 rounded-full cursor-pointer">
               <div className="bg-black rounded-full">
                 <div className="text-white p-2 rounded-full">
                   <Mail className="text-white size-7" />
                 </div>
               </div>
-
               <div className="">
-                <h1>Notify Me</h1>
+                <h1 className="dark:text-white">Notify Me</h1>
               </div>
-
               <div>
-                <MoveRight />
+                <MoveRight className="dark:text-white" />
               </div>
             </div>
           </Link>
