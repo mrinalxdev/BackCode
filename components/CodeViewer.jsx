@@ -79,11 +79,11 @@ const CodeViewer = ({ files }) => {
   const language = getLanguage(activeFile);
 
   return (
-    <div className="flex h-[500px] border border-gray-700 rounded-lg overflow-hidden bg-gray-900 text-white">
-      <div className="w-1/4 border-r border-gray-700 overflow-y-auto">
+    <div className="flex h-[500px] border border-gray-700 rounded-lg overflow-hidden bg-gray-900 text-white dark:border-gray-600">
+      <div className="w-1/4 border-r border-gray-700 overflow-y-auto dark:border-gray-600">
         {renderFileTree(files)}
       </div>
-      <div className="w-3/4 overflow-y-auto code-viewer">
+      <div className="w-3/4 overflow-y-auto code-viewer dark:bg-gray-900">
         <pre className="p-4 text-sm">
           <code className={`language-${language}`}>
             {activeFileContent}

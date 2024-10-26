@@ -19,15 +19,15 @@ const Banner = () => {
   return (
     <div className="flex flex-col max-w-4xl mx-auto">
       <div className="text-center">
-        <div className="mt-[2rem] mb-6 p-2 border text-sm lg:text-[1rem] shadow-xl rounded-[2rem] max-w-[40%] mx-auto text-gray-500">
+        <div className="mt-[2rem] mb-6 p-2 border text-sm lg:text-[1rem] shadow-xl rounded-[2rem] max-w-[40%] mx-auto text-gray-500 dark:text-gray-400 dark:border-gray-700 dark:shadow-gray-900">
           Working on 6 + Head start codes !!
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-6">
           Find <span className="text-primary">Optimized Backend Code</span> for
           Your App
         </h1>
-        <p className="text-xl text-gray-600 mb-12">
+        <p className="text-xl text-gray-600 dark:text-gray-300 mb-12">
           Search for the most efficient backend solutions to integrate into your
           application.
         </p>
@@ -38,8 +38,9 @@ const Banner = () => {
           placeholder="Search for code ..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          className="dark:bg-gray-800 dark:text-white dark:border-gray-700"
         />
-        <Button type="submit">
+        <Button type="submit" className="dark:bg-gray-200 dark:text-black">
           <Search />
         </Button>
       </form>

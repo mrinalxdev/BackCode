@@ -155,7 +155,7 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-rose-100 to-teal-100 dark:from-black dark:to-slate-900">
       <h1 className="text-2xl font-bold mb-4">Contribution Panel</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Card>
